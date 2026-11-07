@@ -23,7 +23,10 @@ class TripService {
     }
 
     @Transactional
-    public void refresh() {
+    public void refresh(FeedScenario scenario) {
+        if (scenario == FeedScenario.UNAVAILABLE) {
+            throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Simulated feed outage");
+        }
         List<SimulatedFeed.Update> snapshot;
         try {
             snapshot = feed.fetch();
@@ -36,7 +39,9 @@ class TripService {
                 .orElseGet(() -> new Trip(update.code(), update.route(), update.departure()));
             trip.route = update.route();
             trip.departure = update.departure();
-            trip.update(update.status(), time);
+            Trip.Status status = scenario == FeedScenario.RECOVERY && update.code().equals("TD104")
+                ? Trip.Status.ON_TIME : update.status();
+            trip.update(status, time);
             repository.save(trip);
         }
     }
@@ -55,8 +60,8 @@ class TripService {
     }
 
     @Transactional
-    public void flag(String code) {
-        find(code).followUp = true;
+    public void setFollowUp(String code, boolean flagged) {
+        find(code).followUp = flagged;
     }
 
     private Trip find(String code) {
@@ -74,4 +79,5 @@ class TripService {
     }
     public record Event(String status, String time) {}
     public record Detail(Row trip, List<Event> history) {}
+    enum FeedScenario { BASELINE, RECOVERY, UNAVAILABLE }
 }

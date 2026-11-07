@@ -25,7 +25,7 @@ class DashboardController {
     @Bean
     ApplicationRunner seedTrips() {
         return args -> {
-            if (repository.count() == 0) service.refresh();
+            if (repository.count() == 0) service.refresh(TripService.FeedScenario.BASELINE);
         };
     }
 
@@ -55,17 +55,18 @@ class DashboardController {
     }
 
     @PostMapping("/trips/{code}/follow-up")
-    String followUp(@PathVariable String code, RedirectAttributes redirect) {
-        service.flag(code);
+    String followUp(@PathVariable String code, @RequestParam(defaultValue = "true") boolean flagged,
+                    RedirectAttributes redirect) {
+        service.setFollowUp(code, flagged);
         redirect.addAttribute("code", code);
-        redirect.addFlashAttribute("message", "Follow-up recorded.");
+        redirect.addFlashAttribute("message", flagged ? "Follow-up recorded." : "Follow-up cleared.");
         return "redirect:/trips/{code}";
     }
 
     @PostMapping("/api/feed/refresh")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     @ResponseBody
-    void refresh() {
-        service.refresh();
+    void refresh(@RequestParam(defaultValue = "BASELINE") TripService.FeedScenario scenario) {
+        service.refresh(scenario);
     }
 }

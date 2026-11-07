@@ -7,7 +7,10 @@ button.addEventListener('click', async () => {
     const token = document.querySelector('meta[name="csrf-token"]').content;
     const header = document.querySelector('meta[name="csrf-header"]').content;
     try {
-        const response = await fetch('/api/feed/refresh', { method: 'POST', headers: { [header]: token } });
+        const scenario = document.querySelector('#scenario').value;
+        const response = await fetch('/api/feed/refresh?scenario=' + encodeURIComponent(scenario), {
+            method: 'POST', headers: { [header]: token }
+        });
         if (!response.ok) throw new Error('Refresh failed');
         location.reload();
     } catch {

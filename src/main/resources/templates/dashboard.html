@@ -21,7 +21,15 @@
 <option value="CANCELLED" th:selected="${status == 'CANCELLED'}">Cancelled</option>
 </select></label>
 <button>Apply filters</button>
-</form><button id="refresh" type="button" class="secondary">Refresh feed</button>
+</form>
+<div>
+<label>Simulated feed <select id="scenario">
+<option value="BASELINE">Standard status</option>
+<option value="RECOVERY">Trip TD104 recovered</option>
+<option value="UNAVAILABLE">Feed unavailable</option>
+</select></label>
+<button id="refresh" type="button" class="secondary">Refresh feed</button>
+</div>
 </section>
 <p id="feed-status" role="status"></p>
 <div class="table-wrap"><table aria-label="Trip status">

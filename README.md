@@ -8,8 +8,9 @@ Use Java 21 and Maven with `mvn spring-boot:run` (H2), or run `docker compose up
 
 1. Filter the board to **Delayed** trips.
 2. Open **TD104** and flag it for follow-up.
-3. Reload the trip page and confirm the flag is still visible.
-4. Return to the board and refresh the simulated feed.
+3. Reload the trip page and confirm the flag is still visible. Use **Clear follow-up** to remove it.
+4. On the dashboard, clear any filters and choose **Trip TD104 recovered**, then refresh. Open the trip to see the status change in its history.
+5. Choose **Feed unavailable** and refresh to verify the last successful snapshot stays visible.
 
 ## Design
 

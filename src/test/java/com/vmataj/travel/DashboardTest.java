@@ -36,6 +36,11 @@ class DashboardTest {
             .andExpect(redirectedUrl("/trips/TD104"));
         mvc.perform(get("/trips/TD104"))
             .andExpect(content().string(containsString("Flagged for follow-up")));
+        mvc.perform(post("/trips/TD104/follow-up").session(session(page))
+                .param(token.getParameterName(), token.getToken()).param("flagged", "false"))
+            .andExpect(redirectedUrl("/trips/TD104"));
+        mvc.perform(get("/trips/TD104"))
+            .andExpect(content().string(not(containsString("Flagged for follow-up"))));
     }
 
     @Test
@@ -52,6 +57,23 @@ class DashboardTest {
 
     private CsrfToken csrf(MvcResult page) {
         return (CsrfToken) page.getRequest().getAttribute(CsrfToken.class.getName());
+    }
+
+    @Test
+    void recoveryAddsHistoryAndOutageLeavesItInPlace() throws Exception {
+        MvcResult page = mvc.perform(get("/")).andExpect(status().isOk()).andReturn();
+        CsrfToken token = csrf(page);
+        mvc.perform(post("/api/feed/refresh").session(session(page))
+                .header(token.getHeaderName(), token.getToken()).param("scenario", "RECOVERY"))
+            .andExpect(status().isNoContent());
+        var recovered = service.detail("TD104");
+        assertThat(recovered.trip().status()).isEqualTo("ON_TIME");
+        assertThat(recovered.history().getLast().status()).isEqualTo("ON TIME");
+        mvc.perform(post("/api/feed/refresh").session(session(page))
+                .header(token.getHeaderName(), token.getToken()).param("scenario", "UNAVAILABLE"))
+            .andExpect(status().isServiceUnavailable());
+        assertThat(service.detail("TD104")).isEqualTo(recovered);
+        service.refresh(TripService.FeedScenario.BASELINE);
     }
 
     private MockHttpSession session(MvcResult page) {

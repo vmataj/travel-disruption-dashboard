@@ -9,8 +9,9 @@
 <section class="panel">
 <span class="badge" th:attr="data-status=${trip.status}" th:text="${trip.statusLabel}"></span>
 <p>Last checked <span th:text="${trip.checkedAt}"></span></p>
-<form th:unless="${trip.followUp}" method="post" th:action="@{/trips/{code}/follow-up(code=${trip.code})}">
-<button>Flag for follow-up</button></form>
+<form method="post" th:action="@{/trips/{code}/follow-up(code=${trip.code})}">
+<input type="hidden" name="flagged" th:value="${!trip.followUp}">
+<button th:text="${trip.followUp ? 'Clear follow-up' : 'Flag for follow-up'}"></button></form>
 <p th:if="${trip.followUp}"><strong>Flagged for follow-up</strong></p>
 <p th:if="${message}" th:text="${message}" role="status"></p>
 </section><section class="panel"><h2>Status history</h2><ol>
