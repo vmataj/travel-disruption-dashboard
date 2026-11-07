@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Trip details</title><link rel="stylesheet" href="/style.css"></head>
+<body><main>
+<a href="/">← All trips</a>
+<header><p class="eyebrow" th:text="${trip.code}"></p><h1 th:text="${trip.route}"></h1>
+<p>Departure <span th:text="${trip.departure}"></span></p></header>
+<section class="panel">
+<span class="badge" th:attr="data-status=${trip.status}" th:text="${trip.statusLabel}"></span>
+<p>Last checked <span th:text="${trip.checkedAt}"></span></p>
+<form th:unless="${trip.followUp}" method="post" th:action="@{/trips/{code}/follow-up(code=${trip.code})}">
+<button>Flag for follow-up</button></form>
+<p th:if="${trip.followUp}"><strong>Flagged for follow-up</strong></p>
+<p th:if="${message}" th:text="${message}" role="status"></p>
+</section><section class="panel"><h2>Status history</h2><ol>
+<li th:each="event : ${history}"><strong th:text="${event.status}"></strong> · <span th:text="${event.time}"></span></li>
+</ol></section>
+</main></body></html>

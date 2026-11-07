@@ -1,0 +1,23 @@
+:root { font: 16px/1.5 system-ui, sans-serif; color: #182c3d; background: #eaf1f5; }
+body { margin: 0; }
+main { max-width: 1050px; margin: 6vh auto; padding: 24px; }
+header { margin-bottom: 32px; }
+h1 { margin: 0; font-size: clamp(2.25rem, 5.5vw, 3.7rem); letter-spacing: -.055em; line-height: 1.1; }
+.eyebrow { color: #325976; font-size: .8rem; font-weight: 800; letter-spacing: .14em; }
+.controls, .panel, .table-wrap { background: white; border: 1px solid #cedde8; border-radius: 14px; }
+.controls { display: flex; flex-wrap: wrap; align-items: end; justify-content: space-between; gap: 14px; padding: 16px; }
+form { display: flex; flex-wrap: wrap; gap: 12px; align-items: end; }
+label { display: grid; gap: 3px; font-size: .85rem; font-weight: 600; }
+select, input, button { border: 1px solid #8fa8b9; border-radius: 7px; padding: 8px 10px; font: inherit; }
+button { background: #174b65; color: white; cursor: pointer; }
+button.secondary { background: white; color: #174b65; }
+.table-wrap { overflow: auto; }
+table { width: 100%; border-collapse: collapse; white-space: nowrap; }
+th, td { padding: 15px; text-align: left; }
+th { background: #f4f8fb; }
+td { border-top: 1px solid #e3edf2; }
+a { color: #165571; font-weight: 700; }
+.badge { display: inline-block; font-size: .76rem; font-weight: 800; padding: 5px 8px; border-radius: 6px; background: #dceddf; color: #205336; }
+.badge[data-status="DELAYED"] { background: #ffedc5; color: #754900; }
+.badge[data-status="CANCELLED"] { background: #f9dfdc; color: #842f28; }
+.panel { padding: 22px; margin: 14px 0; }
