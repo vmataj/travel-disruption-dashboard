@@ -8,13 +8,18 @@ import org.springframework.data.jpa.repository.Query;
 interface TripRepository extends JpaRepository<Trip, String> {
     @Query("""
         select t from Trip t
-        where (:route is null or t.route = :route)
+        where ((:owner is null and t.owner is null) or t.owner = :owner)
+          and (:route is null or t.route = :route)
           and (:departure is null or t.departure = :departure)
           and (:status is null or t.status = :status)
         order by t.departure, t.code
         """)
-    List<Trip> search(String route, LocalDate departure, Trip.Status status);
+    List<Trip> search(String owner, String route, LocalDate departure, Trip.Status status);
 
-    @Query("select distinct t.route from Trip t order by t.route")
-    List<String> routes();
+    @Query("""
+        select distinct t.route from Trip t
+        where (:owner is null and t.owner is null) or t.owner = :owner
+        order by t.route
+        """)
+    List<String> routes(String owner);
 }

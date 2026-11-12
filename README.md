@@ -16,6 +16,22 @@ Use Java 21 and Maven with `mvn spring-boot:run` (H2), or run `docker compose up
 
 The simulated feed needs no external credentials. A successful refresh updates the last-check time and adds a history entry when the status changes. A failed fetch returns HTTP 503 without replacing the stored snapshot. Spring Security protects write requests with CSRF tokens. The demo uses fictional data and is intended to run locally.
 
-## Verify
+## Registered accounts
+
+For the registered-user workflow, set `APP_PROFILE=private` in the shell before running
+`docker compose up --build`. Create an account to get your own simulated trips, status history, and follow-up flags.
+Docker Compose supplies persistent MySQL and allows cookies over local HTTP.
+The default profile uses the original local demo workflow.
+
+For HTTPS hosting, activate the `private` Spring profile and supply
+`SERVER_ADDRESS=0.0.0.0`, `SPRING_DATASOURCE_URL`,
+`SPRING_DATASOURCE_USERNAME`, and `SPRING_DATASOURCE_PASSWORD`.
+Use a dedicated database for this app and inject the password from the hosting
+provider's secret store. The service honors `PORT` and requires HTTPS cookies by default.
+The bundled Cloud SQL connector accepts a JDBC URL of the form
+`jdbc:mysql:///DATABASE?cloudSqlInstance=PROJECT:REGION:INSTANCE&socketFactory=com.google.cloud.sql.mysql.SocketFactory&cloudSqlRefreshStrategy=lazy`.
+For a first Cloud Run deployment, limit the service to one instance because login sessions are held in memory.
+
+## Tests
 
 Run `mvn verify`. Integration tests render the filtered board, flag a trip, and use Mockito to simulate a feed failure.

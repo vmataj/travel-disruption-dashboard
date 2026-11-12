@@ -11,6 +11,7 @@ class Trip {
     enum Status { ON_TIME, DELAYED, CANCELLED }
 
     @Id String code;
+    String owner;
     String route;
     LocalDate departure;
     @Enumerated(EnumType.STRING)

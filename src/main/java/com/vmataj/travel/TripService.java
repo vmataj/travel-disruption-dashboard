@@ -23,7 +23,7 @@ class TripService {
     }
 
     @Transactional
-    public void refresh(FeedScenario scenario) {
+    public void refresh(String owner, FeedScenario scenario) {
         if (scenario == FeedScenario.UNAVAILABLE) {
             throw new ResponseStatusException(HttpStatus.SERVICE_UNAVAILABLE, "Simulated feed outage");
         }
@@ -35,8 +35,10 @@ class TripService {
         }
         Instant time = Instant.now();
         for (var update : snapshot) {
-            Trip trip = repository.findById(update.code())
-                .orElseGet(() -> new Trip(update.code(), update.route(), update.departure()));
+            String key = key(owner, update.code());
+            Trip trip = repository.findById(key)
+                .orElseGet(() -> new Trip(key, update.route(), update.departure()));
+            trip.owner = owner;
             trip.route = update.route();
             trip.departure = update.departure();
             Trip.Status status = scenario == FeedScenario.RECOVERY && update.code().equals("TD104")
@@ -47,33 +49,39 @@ class TripService {
     }
 
     @Transactional(readOnly = true)
-    public List<Row> search(String route, LocalDate departure, Trip.Status status) {
-        return repository.search(route, departure, status).stream().map(Row::from).toList();
+    public List<Row> search(String owner, String route, LocalDate departure, Trip.Status status) {
+        return repository.search(owner, route, departure, status).stream().map(Row::from).toList();
     }
 
     @Transactional(readOnly = true)
-    public Detail detail(String code) {
-        Trip trip = find(code);
+    public Detail detail(String owner, String code) {
+        Trip trip = find(owner, code);
         return new Detail(Row.from(trip), trip.history.stream()
             .map(event -> new Event(event.status().name().replace('_', ' '), UTC.format(event.occurredAt())))
             .toList());
     }
 
     @Transactional
-    public void setFollowUp(String code, boolean flagged) {
-        find(code).followUp = flagged;
+    public void setFollowUp(String owner, String code, boolean flagged) {
+        find(owner, code).followUp = flagged;
     }
 
-    private Trip find(String code) {
-        return repository.findById(code)
+    private Trip find(String owner, String code) {
+        return repository.findById(key(owner, code))
+            .filter(trip -> java.util.Objects.equals(trip.owner, owner))
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND));
+    }
+
+    private String key(String owner, String code) {
+        return owner == null ? code : owner + ":" + code;
     }
 
     public record Row(String code, String route, LocalDate departure, String status,
                       String statusLabel, String checkedAt, boolean followUp) {
         static Row from(Trip trip) {
             String status = trip.status.name();
-            return new Row(trip.code, trip.route, trip.departure, status,
+            String code = trip.owner == null ? trip.code : trip.code.substring(trip.owner.length() + 1);
+            return new Row(code, trip.route, trip.departure, status,
                 status.replace('_', ' '), UTC.format(trip.checkedAt), trip.followUp);
         }
     }

@@ -7,6 +7,9 @@
 <meta name="csrf-header" th:content="${_csrf.headerName}">
 </head>
 <body><main>
+<form th:if="${account}" th:action="@{/logout}" method="post">
+<span th:text="${account}"></span><button>Sign out</button>
+</form>
 <header><p class="eyebrow">TRAVEL OPERATIONS · SIMULATED FEED</p>
 <h1>Travel Disruption Dashboard</h1><p>Review service status and flag affected trips for follow-up.</p></header>
 <section class="controls" aria-label="Dashboard controls">

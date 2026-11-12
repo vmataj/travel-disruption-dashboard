@@ -45,14 +45,14 @@ class DashboardTest {
 
     @Test
     void failedFeedPreservesLastSnapshot() throws Exception {
-        var before = service.search(null, null, null);
+        var before = service.search(null, null, null, null);
         doThrow(new IllegalStateException("Simulated timeout")).when(feed).fetch();
         MvcResult page = mvc.perform(get("/")).andExpect(status().isOk()).andReturn();
         CsrfToken token = csrf(page);
         mvc.perform(post("/api/feed/refresh").session(session(page))
                 .header(token.getHeaderName(), token.getToken()))
             .andExpect(status().isServiceUnavailable());
-        assertThat(service.search(null, null, null)).isEqualTo(before);
+        assertThat(service.search(null, null, null, null)).isEqualTo(before);
     }
 
     private CsrfToken csrf(MvcResult page) {
@@ -66,14 +66,14 @@ class DashboardTest {
         mvc.perform(post("/api/feed/refresh").session(session(page))
                 .header(token.getHeaderName(), token.getToken()).param("scenario", "RECOVERY"))
             .andExpect(status().isNoContent());
-        var recovered = service.detail("TD104");
+        var recovered = service.detail(null, "TD104");
         assertThat(recovered.trip().status()).isEqualTo("ON_TIME");
         assertThat(recovered.history().getLast().status()).isEqualTo("ON TIME");
         mvc.perform(post("/api/feed/refresh").session(session(page))
                 .header(token.getHeaderName(), token.getToken()).param("scenario", "UNAVAILABLE"))
             .andExpect(status().isServiceUnavailable());
-        assertThat(service.detail("TD104")).isEqualTo(recovered);
-        service.refresh(TripService.FeedScenario.BASELINE);
+        assertThat(service.detail(null, "TD104")).isEqualTo(recovered);
+        service.refresh(null, TripService.FeedScenario.BASELINE);
     }
 
     private MockHttpSession session(MvcResult page) {
