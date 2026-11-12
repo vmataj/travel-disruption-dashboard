@@ -32,6 +32,20 @@ The bundled Cloud SQL connector accepts a JDBC URL of the form
 `jdbc:mysql:///DATABASE?cloudSqlInstance=PROJECT:REGION:INSTANCE&socketFactory=com.google.cloud.sql.mysql.SocketFactory&cloudSqlRefreshStrategy=lazy`.
 For a first Cloud Run deployment, limit the service to one instance because login sessions are held in memory.
 
+## Free hosting on Render and Neon
+
+Create a Neon Free PostgreSQL project for this app. Connect this repository to
+Render as a Blueprint and select the Free plan. The Blueprint activates the
+registered-account profile and asks for these database settings:
+
+- `SPRING_DATASOURCE_URL` is the Neon JDBC URL, such as `jdbc:postgresql://HOST/DATABASE?sslmode=require`.
+- `SPRING_DATASOURCE_USERNAME` is the Neon database role.
+- `SPRING_DATASOURCE_PASSWORD` is the role password.
+
+Enter the database credentials in Render, where they are stored as environment
+variables. Use a separate Neon project for each app. Local Docker Compose
+continues to use MySQL. Login sessions reset when the free web service restarts.
+
 ## Tests
 
 Run `mvn verify`. Integration tests render the filtered board, flag a trip, and use Mockito to simulate a feed failure.
