@@ -7,11 +7,14 @@
 <meta name="csrf-header" th:content="${_csrf.headerName}">
 </head>
 <body><main>
+<nav class="topbar" aria-label="App navigation"><a class="wordmark" href="/">Departures board</a>
+<div th:if="${preview}" class="account-nav"><a href="/login.html">Sign in</a><a class="button" href="/signup.html">Create account</a></div>
 <form th:if="${account}" th:action="@{/logout}" method="post">
 <span th:text="${account}"></span><button>Sign out</button>
-</form>
-<header><p class="eyebrow">TRAVEL OPERATIONS · SIMULATED FEED</p>
+</form></nav>
+<header class="hero">
 <h1>Travel Disruption Dashboard</h1><p>Review service status and flag affected trips for follow-up.</p></header>
+<p th:if="${preview}" class="preview-note"><span class="sample-tag">Sample departures</span> Filter the board below. Sign in to refresh your feed and flag trips.</p>
 <section class="controls" aria-label="Dashboard controls">
 <form method="get" th:action="@{/}">
 <label>Route<select name="route"><option value="">All routes</option>
@@ -25,7 +28,7 @@
 </select></label>
 <button>Apply filters</button>
 </form>
-<div>
+<div th:unless="${preview}" class="feed-controls">
 <label>Simulated feed <select id="scenario">
 <option value="BASELINE">Standard status</option>
 <option value="RECOVERY">Trip TD104 recovered</option>
@@ -39,7 +42,7 @@
 <thead><tr><th>Trip</th><th>Route</th><th>Departure</th><th>Status</th><th>Last checked</th><th>Follow-up</th></tr></thead>
 <tbody>
 <tr th:each="row : ${rows}">
-<td><a th:href="@{/trips/{code}(code=${row.code})}" th:text="${row.code}"></a></td>
+<td><span th:if="${preview}" th:text="${row.code}"></span><a th:unless="${preview}" th:href="@{/trips/{code}(code=${row.code})}" th:text="${row.code}"></a></td>
 <td th:text="${row.route}"></td><td th:text="${row.departure}"></td>
 <td><span class="badge" th:attr="data-status=${row.status}" th:text="${row.statusLabel}"></span></td>
 <td th:text="${row.checkedAt}"></td><td th:text="${row.followUp ? 'Flagged' : '—'}"></td>

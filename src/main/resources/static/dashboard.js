@@ -1,7 +1,7 @@
 const button = document.querySelector('#refresh');
 const statusLine = document.querySelector('#feed-status');
 
-button.addEventListener('click', async () => {
+button?.addEventListener('click', async () => {
     button.disabled = true;
     statusLine.textContent = 'Checking the status feed…';
     const token = document.querySelector('meta[name="csrf-token"]').content;

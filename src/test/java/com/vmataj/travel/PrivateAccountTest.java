@@ -40,6 +40,17 @@ class PrivateAccountTest {
             .andExpect(content().string(org.hamcrest.Matchers.containsString("DELAYED")));
     }
 
+    @Test
+    void visitorsCanFilterSampleTripsWhilePrivateRoutesStayProtected() throws Exception {
+        mvc.perform(get("/").param("status", "CANCELLED"))
+            .andExpect(status().isOk())
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("Sample departures")))
+            .andExpect(content().string(org.hamcrest.Matchers.containsString("TD206")))
+            .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("TD104"))));
+        mvc.perform(get("/trips/TD206"))
+            .andExpect(redirectedUrl("http://localhost/login.html"));
+    }
+
     private MockHttpSession signupAndLogin(String username) throws Exception {
         MockHttpSession session = new MockHttpSession();
         var token = token(session);

@@ -21,10 +21,12 @@ class DashboardController {
     private final TripService service;
     private final TripRepository repository;
     private final boolean privateMode;
+    private final SimulatedFeed feed;
 
-    DashboardController(TripService service, TripRepository repository, Environment environment) {
+    DashboardController(TripService service, TripRepository repository, Environment environment, SimulatedFeed feed) {
         this.service = service;
         this.repository = repository;
+        this.feed = feed;
         this.privateMode = environment.acceptsProfiles(Profiles.of("private"));
     }
 
@@ -46,11 +48,25 @@ class DashboardController {
     String dashboard(@RequestParam(required = false) String route,
                      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate day,
                      @RequestParam(required = false) Trip.Status status, Model model, Principal actor) {
-        if (privateMode && actor == null) return "redirect:/signup.html";
-        String owner = owner(actor);
+        boolean preview = privateMode && actor == null;
+        String owner = preview ? null : owner(actor);
+        model.addAttribute("preview", preview);
         model.addAttribute("account", owner);
-        model.addAttribute("routes", repository.routes(owner));
-        model.addAttribute("rows", service.search(owner, route == null || route.isBlank() ? null : route, day, status));
+        String selectedRoute = route == null || route.isBlank() ? null : route;
+        if (preview) {
+            var updates = feed.fetch();
+            model.addAttribute("routes", updates.stream().map(SimulatedFeed.Update::route).distinct().sorted().toList());
+            model.addAttribute("rows", updates.stream()
+                .filter(update -> selectedRoute == null || selectedRoute.equals(update.route()))
+                .filter(update -> day == null || day.equals(update.departure()))
+                .filter(update -> status == null || status == update.status())
+                .map(update -> new TripService.Row(update.code(), update.route(), update.departure(),
+                    update.status().name(), update.status().name().replace('_', ' '), "Sample", false))
+                .toList());
+        } else {
+            model.addAttribute("routes", repository.routes(owner));
+            model.addAttribute("rows", service.search(owner, selectedRoute, day, status));
+        }
         model.addAttribute("route", route);
         model.addAttribute("day", day);
         model.addAttribute("status", status == null ? "" : status.name());

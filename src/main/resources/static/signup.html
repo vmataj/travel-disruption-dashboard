@@ -1,17 +1,14 @@
 <!doctype html>
-<html lang="en">
-<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Travel Dashboard Accounts</title><link rel="stylesheet" href="/style.css"></head>
-<body><main><h1>Travel Dashboard</h1><p>Sign in to manage your own trips and follow-up flags.</p>
-<section id="account-panel" hidden>
-<p id="account-status" role="status"></p>
-<a id="login" href="/login">Sign in</a>
-<form id="logout" action="/logout" method="post" hidden><input type="hidden" name="_csrf"><button>Sign out</button></form>
-<form id="signup" hidden>
-<h2>Create an account</h2>
-<label>Username <input name="username" required minlength="3" maxlength="40" pattern="[a-z0-9][a-z0-9_\-]{2,39}" autocomplete="username"></label>
-<label>Password <input type="password" name="password" required minlength="12" maxlength="72" autocomplete="new-password"></label>
-<button>Create account</button>
-</form>
-</section>
-</main><script src="/account.js"></script></body></html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Create account | Travel Disruption Dashboard</title><link rel="stylesheet" href="/style.css"><script defer src="/account.js"></script></head>
+<body class="account-page"><main>
+<a class="back" href="/">← Back to Travel Disruption Dashboard</a>
+<div class="auth-layout"><aside class="auth-intro"><p>Travel Disruption Dashboard</p><h1>Your operations board</h1><p>Monitor trips, review disruption history, and flag follow-ups.</p></aside>
+<section class="auth-card"><h2>Create account</h2>
+<form id="account-form" method="post" action="/account/signup" data-mode="signup">
+<input type="hidden" name="_csrf">
+<label>Username<input name="username" autocomplete="username" required pattern="[a-z0-9][a-z0-9_\-]{2,39}" maxlength="40"><small>Use 3–40 lowercase letters, numbers, underscores or hyphens. Start with a letter or number.</small></label>
+<label>Password<input name="password" type="password" required minlength="12" maxlength="72" autocomplete="new-password"><small>Use at least 12 characters.</small></label>
+<button disabled>Create account</button>
+</form><p id="account-feedback" role="status"></p><p><a href="/login.html">Sign in</a></p></section></div>
+</main></body></html>
