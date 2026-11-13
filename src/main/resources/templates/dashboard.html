@@ -2,18 +2,18 @@
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Travel Disruption Dashboard</title><link rel="stylesheet" href="/style.css">
+<title>Departures board | Waypoint Travel Planner</title><link rel="stylesheet" href="/style.css">
 <meta name="csrf-token" th:content="${_csrf.token}">
 <meta name="csrf-header" th:content="${_csrf.headerName}">
 </head>
 <body><main>
-<nav class="topbar" aria-label="App navigation"><a class="wordmark" href="/">← Trip planner</a>
+<nav class="topbar" aria-label="App navigation"><a class="wordmark" href="/">← Waypoint</a>
 <div th:if="${preview}" class="account-nav"><a href="/login.html">Sign in</a><a class="button" href="/signup.html">Create account</a></div>
 <form th:if="${account}" th:action="@{/logout}" method="post">
 <span th:text="${account}"></span><button>Sign out</button>
 </form></nav>
 <header class="hero">
-<h1>Travel Disruption Dashboard</h1><p>Review service status and flag affected trips for follow-up.</p></header>
+<h1>Departures board</h1><p>Review service status and flag affected trips for follow-up.</p></header>
 <p th:if="${preview}" class="preview-note"><span class="sample-tag">Sample departures</span> Filter the board below. Sign in to refresh your feed and flag trips.</p>
 <section class="controls" aria-label="Dashboard controls">
 <form method="get" th:action="@{/disruptions}">
