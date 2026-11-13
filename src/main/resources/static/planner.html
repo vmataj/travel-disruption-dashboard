@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Explore destinations, check the weather and plan trips together.">
+    <title>Trip Planner | Travel Disruption Dashboard</title>
+    <link rel="stylesheet" href="/planner.css">
+    <script src="/planner.js" type="module"></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<aside class="sidebar">
+    <a class="brand" href="#overview"><span class="brand-icon" aria-hidden="true">✈</span><span>Trip Planner<small>Travel dashboard</small></span></a>
+    <nav class="navigation" aria-label="Planner">
+        <a href="#overview" data-page="overview"><span aria-hidden="true">▦</span>Overview</a>
+        <a href="#destinations" data-page="destinations"><span aria-hidden="true">⌖</span>Destinations</a>
+        <a href="#trips" data-page="trips"><span aria-hidden="true">▤</span>Trips</a>
+        <a href="#itinerary" data-page="itinerary"><span aria-hidden="true">☷</span>Itinerary</a>
+        <a href="#budget" data-page="budget"><span aria-hidden="true">◫</span>Budget</a>
+    </nav>
+    <a class="departures" href="/disruptions"><span aria-hidden="true">↗</span> Departures board</a>
+</aside>
+<div class="shell">
+    <header class="topbar">
+        <span id="breadcrumb">Overview</span>
+        <div class="account" id="guest"><a href="/login.html">Sign in</a><a href="/signup.html" class="button outline">Create account</a></div>
+        <form class="account" id="session" action="/logout" method="post" hidden>
+            <span id="username"></span><input type="hidden" name="_csrf"><button type="submit" class="outline">Sign out</button>
+        </form>
+    </header>
+    <main id="main">
+        <div class="page-intro">
+            <div><h1 id="page-title">Where to next?</h1><p id="page-description">Explore cities, check the forecast, and plan your next trip.</p></div>
+            <button id="new-trip" class="primary" type="button">＋ New trip</button>
+        </div>
+        <section id="discover" aria-label="Find a destination">
+            <form id="search" class="search">
+                <label><span class="sr-only">City or destination</span><span aria-hidden="true">⌕</span>
+                    <input name="query" type="search" minlength="2" maxlength="100" placeholder="Search a city, e.g. Paris" required></label>
+                <button class="primary">Search</button>
+            </form>
+            <p id="search-status" role="status" hidden></p>
+            <div id="results" class="results" aria-label="Search results" hidden></div>
+        </section>
+        <p id="workspace-status" role="status" hidden></p>
+        <section id="overview" aria-label="Trip summary" class="stats"></section>
+        <div id="destination-panels" class="destination-grid">
+            <section class="hero" id="destination-hero" aria-label="Selected destination">
+                <div class="hero-content">
+                    <span id="destination-region" class="hero-region">Portugal</span>
+                    <h2 id="destination-name">Lisbon</h2>
+                    <p id="destination-meta">Europe/Lisbon</p>
+                    <div class="hero-actions">
+                        <button type="button" id="plan-destination">Plan a trip</button>
+                        <button type="button" id="save-destination" aria-pressed="false">♡ Save destination</button>
+                    </div>
+                </div>
+                <a class="photo-credit" id="photo-credit" href="https://commons.wikimedia.org/wiki/File:Lisbon%27s_panorama_from_Alfama_-_panoramio.jpg" target="_blank" rel="noreferrer">Photo by milos milosevic</a>
+            </section>
+            <section class="panel weather" aria-labelledby="weather-title">
+                <div class="panel-heading"><h2 id="weather-title">Weather in Lisbon</h2><a href="https://open-meteo.com/" target="_blank" rel="noreferrer">Open-Meteo ↗</a></div>
+                <div id="weather-content" aria-live="polite"><p class="muted">Loading the forecast…</p></div>
+            </section>
+            <section class="panel map" aria-labelledby="map-title">
+                <div class="panel-heading"><h2 id="map-title">Destination map</h2><a id="map-link" target="_blank" rel="noreferrer">Open map ↗</a></div>
+                <iframe id="map-frame" title="Map of Lisbon" loading="lazy"></iframe>
+            </section>
+            <section class="panel" id="saved" aria-labelledby="saved-title">
+                <div class="panel-heading"><h2 id="saved-title">Saved destinations</h2><span id="saved-count" class="badge"></span></div>
+                <div id="favorite-list" class="rows"></div>
+            </section>
+        </div>
+        <section class="panel overview-plan" id="overview-plan" aria-labelledby="overview-plan-title">
+            <div class="panel-heading"><h2 id="overview-plan-title">Next trip</h2><a href="#trips">View trips</a></div>
+            <div id="overview-trip"></div>
+        </section>
+        <div class="planning-grid" id="planning-panels" hidden>
+            <section class="panel trip-list" id="trips" aria-labelledby="trip-list-title">
+                <div class="panel-heading"><h2 id="trip-list-title">Your trips</h2><button type="button" id="refresh-trips" class="text-button">Refresh</button></div>
+                <div id="trip-list" class="rows"></div>
+            </section>
+            <div class="trip-content" id="trip-content" hidden>
+                <section class="panel" aria-label="Selected trip">
+                    <div class="panel-heading"><div><h2 id="trip-title"></h2><p id="trip-dates" class="muted"></p></div><button type="button" id="edit-trip" class="outline">Edit trip</button></div>
+                    <div class="trip-actions">
+                        <button type="button" id="trip-destination" class="text-button">View destination</button>
+                        <button type="button" id="share-trip" class="text-button">Share trip</button>
+                        <button type="button" id="delete-trip" class="text-button danger">Delete trip</button>
+                    </div>
+                </section>
+                <section class="panel" id="itinerary" aria-labelledby="itinerary-title">
+                    <div class="panel-heading"><h2 id="itinerary-title">Itinerary</h2><button type="button" id="new-activity" class="outline">＋ Activity</button></div>
+                    <div id="activity-list" class="rows"></div>
+                </section>
+                <section class="panel" id="budget" aria-labelledby="budget-title">
+                    <div class="panel-heading"><h2 id="budget-title">Budget</h2><button type="button" id="new-expense" class="outline">＋ Expense</button></div>
+                    <div id="budget-summary"></div>
+                    <div id="expense-list" class="rows"></div>
+                </section>
+            </div>
+        </div>
+        <footer><a href="https://open-meteo.com/en/docs/geocoding-api" target="_blank" rel="noreferrer">Location data by GeoNames via Open-Meteo</a></footer>
+    </main>
+</div>
+<dialog id="editor">
+    <form id="editor-form">
+        <div class="panel-heading"><h2 id="editor-title"></h2><button type="button" id="editor-close" class="close" aria-label="Close">×</button></div>
+        <div id="editor-fields" class="fields"></div>
+        <p id="editor-status" role="status"></p>
+        <div class="editor-actions"><button type="button" id="editor-cancel" class="outline">Cancel</button><button id="editor-submit" class="primary">Save</button></div>
+    </form>
+</dialog>
+<template id="trip-fields">
+    <label>Trip name<input name="title" maxlength="120" required></label>
+    <div class="field-pair"><label>Departure<input name="startDate" type="date" required></label><label>Return<input name="endDate" type="date" required></label></div>
+    <div class="field-pair"><label>Budget limit<input name="budget" type="number" min="0" max="9999999999.99" step="0.01" required></label><label>Currency
+        <select name="currency"><option>EUR</option><option>USD</option><option>GBP</option><option>CAD</option><option>AUD</option><option>CHF</option><option>JPY</option><option>ALL</option></select></label></div>
+</template>
+<template id="activity-fields">
+    <label>Activity name<input name="title" maxlength="120" required></label>
+    <div class="field-pair"><label>Date<input name="day" type="date" required></label><label>Local time<input name="time" type="time"></label></div>
+    <label>Location<input name="location" maxlength="180"></label>
+    <label>Notes<textarea name="notes" maxlength="500" rows="3"></textarea></label>
+</template>
+<template id="expense-fields">
+    <label>Expense name<input name="title" maxlength="120" required></label>
+    <div class="field-pair"><label>Amount<input name="amount" type="number" min="0.01" max="9999999999.99" step="0.01" required></label>
+        <label>Category<select name="category"><option value="TRANSPORT">Transport</option><option value="LODGING">Lodging</option><option value="FOOD">Food</option><option value="ACTIVITIES">Activities</option><option value="OTHER">Other</option></select></label></div>
+</template>
+</body>
+</html>

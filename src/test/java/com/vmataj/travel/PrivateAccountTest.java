@@ -42,13 +42,73 @@ class PrivateAccountTest {
 
     @Test
     void visitorsCanFilterSampleTripsWhilePrivateRoutesStayProtected() throws Exception {
-        mvc.perform(get("/").param("status", "CANCELLED"))
+        mvc.perform(get("/disruptions").param("status", "CANCELLED"))
             .andExpect(status().isOk())
             .andExpect(content().string(org.hamcrest.Matchers.containsString("Sample departures")))
             .andExpect(content().string(org.hamcrest.Matchers.containsString("TD206")))
             .andExpect(content().string(org.hamcrest.Matchers.not(org.hamcrest.Matchers.containsString("TD104"))));
         mvc.perform(get("/trips/TD206"))
             .andExpect(redirectedUrl("http://localhost/login.html"));
+    }
+
+    @Test
+    void collaboratorsCanEditSharedTripsAndLoseAccessWhenRemoved() throws Exception {
+        MockHttpSession owner = signupAndLogin("tripowner");
+        MockHttpSession friend = signupAndLogin("tripfriend");
+        MockHttpSession outsider = signupAndLogin("tripoutsider");
+        var ownerToken = token(owner);
+        var friendToken = token(friend);
+        var outsiderToken = token(outsider);
+        String place = """
+            {"placeId":2267057,"name":"Lisbon","country":"Portugal","countryCode":"PT",
+             "latitude":38.7167,"longitude":-9.1333,"timezone":"Europe/Lisbon"}
+            """;
+        String plan = """
+            {"title":"Weekend in Lisbon","startDate":"2027-05-14","endDate":"2027-05-17",
+             "currency":"EUR","budget":"450.00","destination":%s}
+            """.formatted(place);
+        String activity = """
+            {"day":"2027-05-15","time":"10:00","title":"Visit the castle","location":"Alfama"}
+            """;
+        String expense = """
+            {"title":"Train tickets","category":"TRANSPORT","amount":"18.50"}
+            """;
+        mvc.perform(get("/")).andExpect(forwardedUrl("/planner.html"));
+        mvc.perform(get("/api/planner")).andExpect(status().isUnauthorized());
+        mvc.perform(put("/api/planner/favorites").session(owner).header(ownerToken.csrfHeader(), ownerToken.csrfToken())
+                .contentType("application/json").content(place))
+            .andExpect(status().isNoContent());
+        byte[] created = mvc.perform(post("/api/planner/trips").session(owner)
+                .header(ownerToken.csrfHeader(), ownerToken.csrfToken()).contentType("application/json").content(plan))
+            .andExpect(status().isCreated()).andReturn().getResponse().getContentAsByteArray();
+        String tripUrl = "/api/planner/trips/" + json.readTree(created).path("id").asText();
+        mvc.perform(get("/api/planner").session(outsider))
+            .andExpect(jsonPath("$.trips").isEmpty()).andExpect(jsonPath("$.favorites").isEmpty());
+        mvc.perform(post(tripUrl + "/activities").session(outsider).header(outsiderToken.csrfHeader(), outsiderToken.csrfToken())
+                .contentType("application/json").content(activity))
+            .andExpect(status().isNotFound());
+        mvc.perform(put(tripUrl + "/collaborators").session(owner).header(ownerToken.csrfHeader(), ownerToken.csrfToken())
+                .contentType("application/json").content("{\"username\":\"tripfriend\"}"))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.collaborators[0]").value("tripfriend"));
+        mvc.perform(post(tripUrl + "/activities").session(friend).header(friendToken.csrfHeader(), friendToken.csrfToken())
+                .contentType("application/json").content(activity.replace("2027-05-15", "2027-05-18")))
+            .andExpect(status().isBadRequest());
+        mvc.perform(post(tripUrl + "/activities").session(friend).header(friendToken.csrfHeader(), friendToken.csrfToken())
+                .contentType("application/json").content(activity))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.activities[0].activity.title").value("Visit the castle"));
+        mvc.perform(post(tripUrl + "/expenses").session(friend).header(friendToken.csrfHeader(), friendToken.csrfToken())
+                .contentType("application/json").content(expense))
+            .andExpect(status().isOk()).andExpect(jsonPath("$.expenses[0].expense.amount").value(18.5));
+        mvc.perform(delete(tripUrl).session(friend).header(friendToken.csrfHeader(), friendToken.csrfToken()))
+            .andExpect(status().isForbidden());
+        mvc.perform(get("/api/planner").session(owner))
+            .andExpect(jsonPath("$.favorites[0].name").value("Lisbon"))
+            .andExpect(jsonPath("$.trips[0].activities[0].activity.title").value("Visit the castle"))
+            .andExpect(jsonPath("$.trips[0].expenses[0].expense.amount").value(18.5));
+        mvc.perform(delete(tripUrl + "/collaborators/tripfriend").session(owner)
+                .header(ownerToken.csrfHeader(), ownerToken.csrfToken()))
+            .andExpect(status().isOk());
+        mvc.perform(get("/api/planner").session(friend)).andExpect(jsonPath("$.trips").isEmpty());
     }
 
     private MockHttpSession signupAndLogin(String username) throws Exception {

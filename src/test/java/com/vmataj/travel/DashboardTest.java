@@ -25,7 +25,7 @@ class DashboardTest {
 
     @Test
     void dashboardFiltersAndPersistsFollowUp() throws Exception {
-        MvcResult page = mvc.perform(get("/").param("status", "DELAYED"))
+        MvcResult page = mvc.perform(get("/disruptions").param("status", "DELAYED"))
             .andExpect(status().isOk())
             .andExpect(content().string(containsString("TD104")))
             .andExpect(content().string(not(containsString("TD206"))))
@@ -47,7 +47,7 @@ class DashboardTest {
     void failedFeedPreservesLastSnapshot() throws Exception {
         var before = service.search(null, null, null, null);
         doThrow(new IllegalStateException("Simulated timeout")).when(feed).fetch();
-        MvcResult page = mvc.perform(get("/")).andExpect(status().isOk()).andReturn();
+        MvcResult page = mvc.perform(get("/disruptions")).andExpect(status().isOk()).andReturn();
         CsrfToken token = csrf(page);
         mvc.perform(post("/api/feed/refresh").session(session(page))
                 .header(token.getHeaderName(), token.getToken()))
@@ -61,7 +61,7 @@ class DashboardTest {
 
     @Test
     void recoveryAddsHistoryAndOutageLeavesItInPlace() throws Exception {
-        MvcResult page = mvc.perform(get("/")).andExpect(status().isOk()).andReturn();
+        MvcResult page = mvc.perform(get("/disruptions")).andExpect(status().isOk()).andReturn();
         CsrfToken token = csrf(page);
         mvc.perform(post("/api/feed/refresh").session(session(page))
                 .header(token.getHeaderName(), token.getToken()).param("scenario", "RECOVERY"))

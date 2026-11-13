@@ -44,7 +44,7 @@ class DashboardController {
         return http.authorizeHttpRequests(requests -> requests.anyRequest().permitAll()).build();
     }
 
-    @GetMapping("/")
+    @GetMapping("/disruptions")
     String dashboard(@RequestParam(required = false) String route,
                      @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate day,
                      @RequestParam(required = false) Trip.Status status, Model model, Principal actor) {

@@ -26,7 +26,7 @@ if (accountForm) {
     if (query.has('created')) feedback.textContent = 'Account created. Sign in to get started.';
     loadAccount().then(account => {
         if (!account) {
-            feedback.textContent = 'Account access is disabled in local demo mode.';
+            feedback.textContent = 'Start the app with Docker Compose to enable accounts.';
             return;
         }
         if (account.username) { location.replace('/'); return; }
